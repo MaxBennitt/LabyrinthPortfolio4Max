@@ -31,7 +31,8 @@ let pallet = {
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
     "O": ANSI.COLOR.BLUE,
-    "X": ANSI.COLOR.RED
+    "X": ANSI.COLOR.RED,
+    "\u2668": ANSI.COLOR.YELLOW,
 }
 
 let isDirty = true;
@@ -48,12 +49,13 @@ const LOOT = "$";
 const WALL = "█";
 const DOOR = "O";
 const NPC = "X";
+const TELEPORT = "\u2668";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY, DOOR, NPC];
+const THINGS = [LOOT, EMPTY, DOOR, NPC, TELEPORT];
 
 let eventText = "";
 
@@ -91,6 +93,17 @@ class Labyrinth {
                 }
             }
         }
+    }
+
+    LocateOtherTeleport(currentRow, currentCol) {
+        for (let row = 0; row < level.length; row++) {
+            for (let col = 0; col < level[row].length; col++) {
+                if (level[row][col] === TELEPORT && (row !== currentRow || col !== currentCol)) {
+                    return { row, col };
+                }
+            }
+        }
+        return null;
     }
 
     updateNPCs() {
@@ -167,6 +180,26 @@ class Labyrinth {
                 if (currentLevel === startingLevel) {
                     this.loadLevel("aSharpPlace");
                     return;
+                }
+            }
+
+            // Can't walk into the teleport from the right side.
+            if (currentItem == TELEPORT) {
+                let otherTeleport = this.LocateOtherTeleport(tRow, tcol);
+                if (otherTeleport) {
+                    level[playerPos.row][playerPos.col] = EMPTY;
+                    let destinationCol = otherTeleport.col + 1;
+                    if (level[otherTeleport.row][destinationCol] !== EMPTY) {
+                        destinationCol = otherTeleport.col - 1;
+                    }
+                    if (level[otherTeleport.row][destinationCol] === EMPTY) {
+                        level[otherTeleport.row][destinationCol] = HERO;
+                        playerPos.row = otherTeleport.row;
+                        playerPos.col = destinationCol;
+                        eventText = "The Hero went through a spirit gate!";
+                        isDirty = true;
+                        return;
+                    }
                 }
             }
 
