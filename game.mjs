@@ -12,7 +12,6 @@ let state = null;
 let splashScreen = null;
 
 function init() {
-    //All levels available to the game. 
     splashScreen = new SplashScreen();
     state = splashScreen;
     intervalID = setInterval(update, REFRESH_RATE);
@@ -22,10 +21,8 @@ function update() {
 
     if (isBlocked) { return; }
     isBlocked = true;
-    //#region core game loop
     state.update();
     state.draw();
-    //#endregion
     if (splashScreen && state === splashScreen && splashScreen.isFinished()) {
         state = new Labyrinth();
         splashScreen = null;

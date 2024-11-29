@@ -3,7 +3,6 @@ import KeyBoardManager from "./utils/KeyBoardManager.mjs";
 import { readMapFile, readRecordFile } from "./utils/fileHelpers.mjs";
 import * as CONST from "./constants.mjs";
 
-
 const startingLevel = CONST.START_LEVEL_ID;
 const levels = loadLevelListings();
 
@@ -52,6 +51,9 @@ const DOOR = "O";
 const BACKDOOR = "Ø";
 const NPC = "X";
 const TELEPORT = "\u2668";
+const SNEAK = "The Hero swiftly sneaked past the guards!";
+const TELEPORT_GATE = "The Hero went through a spirit gate!";
+
 const LEVEL_CONNECTIONS = {
     "start": { 
         next: "aSharpPlace", 
@@ -196,7 +198,7 @@ class Labyrinth {
             }
         }
 
-        if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
+        if (THINGS.includes(level[tRow][tcol])) {
 
             if (drow !== 0 || dcol !== 0) {
                 eventText = "";
@@ -205,7 +207,7 @@ class Labyrinth {
             let currentItem = level[tRow][tcol];
 
             if (currentItem == NPC) {
-                eventText = "The Hero swiftly sneaked past the guards!";
+                eventText = SNEAK;
             }
 
             if (currentItem == LOOT) {
@@ -214,7 +216,6 @@ class Labyrinth {
                 eventText = `Player gained ${loot}$`;
             }
 
-            // Can't walk into the teleport from the right side.
             if (currentItem == TELEPORT) {
                 let otherTeleport = this.LocateOtherTeleport(tRow, tcol);
                 if (otherTeleport) {
@@ -227,22 +228,19 @@ class Labyrinth {
                         level[otherTeleport.row][destinationCol] = HERO;
                         playerPos.row = otherTeleport.row;
                         playerPos.col = destinationCol;
-                        eventText = "The Hero went through a spirit gate!";
+                        eventText = TELEPORT_GATE;
                         isDirty = true;
                         return;
                     }
                 }
             }
 
-            // Move the HERO
             level[playerPos.row][playerPos.col] = EMPTY;
             level[tRow][tcol] = HERO;
 
-            // Update the HERO
             playerPos.row = tRow;
             playerPos.col = tcol;
 
-            // Make the draw function draw.
             isDirty = true;
         } else {
             direction *= -1;

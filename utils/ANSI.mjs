@@ -31,7 +31,7 @@ const BACK_BLUE = '\x1b[44m';
 const HIDE_CURSOR = '\u001B[?25l';
 const SHOW_CURSOR = '\u001B[?25h';
 
-const GRAPHICS_MODE = CSI + "=18h" //640 x 480 color (16-color graphics)
+const GRAPHICS_MODE = CSI + "=18h"
 
 const ANSI = {
     ESC,

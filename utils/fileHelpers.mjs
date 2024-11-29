@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { MAP_DIRECTORY } from "../constants.mjs";
 
-
 function readMapFile(fileName) {
     let data = fs.readFileSync(`${MAP_DIRECTORY}${fileName}`, { encoding: "utf8" });
     data = data.split("\n");

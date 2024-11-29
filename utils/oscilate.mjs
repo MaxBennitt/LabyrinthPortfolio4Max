@@ -1,4 +1,3 @@
-
 function oscillate(min, max, delta = 1) {
     let current = min;
     let direction = 1;
@@ -16,7 +15,6 @@ function oscillate(min, max, delta = 1) {
 
         return current;
     };
-
 }
 
 export default oscillate 
