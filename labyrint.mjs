@@ -31,27 +31,29 @@ let pallet = {
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
     "O": ANSI.COLOR.BLUE,
+    "X": ANSI.COLOR.RED
 }
 
-
 let isDirty = true;
-
 let playerPos = {
     row: null,
     col: null,
 }
+
+let npcPositions = [];
 
 const EMPTY = " ";
 const HERO = "H";
 const LOOT = "$";
 const WALL = "█";
 const DOOR = "O";
+const NPC = "X";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY, DOOR];
+const THINGS = [LOOT, EMPTY, DOOR, NPC];
 
 let eventText = "";
 
@@ -71,6 +73,41 @@ class Labyrinth {
         playerPos = {row: null, col: null};
         isDirty = true;
         eventText = `Entered ${levelNumber}`;
+        this.findNPCs();
+    }
+
+    findNPCs() {
+        npcPositions = [];
+        for (let row = 0; row < level.length; row++) {
+            for (let col = 0; col < level[row].length; col++) {
+                if (level[row][col] === NPC) {
+                    npcPositions.push({
+                        row: row,
+                        col: col,
+                        startRow: row,
+                        direction: 1,
+                        steps: 0
+                    });
+                }
+            }
+        }
+    }
+
+    updateNPCs() {
+        for (let npc of npcPositions) {
+            let oldRow = npc.row;
+            let oldCol = npc.col;
+            let newRow = npc.row + npc.direction;
+            if (Math.abs(newRow - npc.startRow) >= 2 || level[newRow][npc.col] === WALL) {
+                npc.direction *= -1;
+                newRow = npc.row + npc.direction;
+            }
+            if (level[newRow][npc.col] === EMPTY) {
+                level[oldRow][oldCol] = EMPTY;
+                level[newRow][npc.col] = NPC;
+                npc.row = newRow;
+            }
+        }
     }
 
     update() {
@@ -110,7 +147,16 @@ class Labyrinth {
 
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
+            if (drow !== 0 || dcol !== 0) {
+                eventText = "";
+            }
+
             let currentItem = level[tRow][tcol];
+
+            if (currentItem == NPC) {
+                eventText = "The Hero swiftly sneaked past the guards!";
+            }
+
             if (currentItem == LOOT) {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
@@ -137,6 +183,7 @@ class Labyrinth {
         } else {
             direction *= -1;
         }
+        this.updateNPCs();
     }
 
     draw() {
@@ -169,7 +216,6 @@ class Labyrinth {
         console.log(rendring);
         if (eventText != "") {
             console.log(eventText);
-            eventText = "";
         }
     }
 }
