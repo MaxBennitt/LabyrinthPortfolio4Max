@@ -21,6 +21,7 @@ function loadLevelListings(source = CONST.LEVEL_LISTING_FILE) {
     return levels;
 }
 
+let currentLevel = startingLevel;
 let levelData = readMapFile(levels[startingLevel]);
 let level = levelData;
 
@@ -29,6 +30,7 @@ let pallet = {
     "H": ANSI.COLOR.RED,
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
+    "O": ANSI.COLOR.BLUE,
 }
 
 
@@ -41,13 +43,15 @@ let playerPos = {
 
 const EMPTY = " ";
 const HERO = "H";
-const LOOT = "$"
+const LOOT = "$";
+const WALL = "█";
+const DOOR = "O";
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY];
+const THINGS = [LOOT, EMPTY, DOOR];
 
 let eventText = "";
 
@@ -59,6 +63,15 @@ const playerStats = {
 }
 
 class Labyrinth {
+
+    loadLevel(levelNumber) {
+        currentLevel = levelNumber
+        levelData = readMapFile(levels[levelNumber]);
+        level = levelData;
+        playerPos = {row: null, col: null};
+        isDirty = true;
+        eventText = `Entered ${levelNumber}`;
+    }
 
     update() {
 
@@ -102,6 +115,13 @@ class Labyrinth {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
                 eventText = `Player gained ${loot}$`;
+            }
+
+            if (currentItem == DOOR) {
+                if (currentLevel === startingLevel) {
+                    this.loadLevel("aSharpPlace");
+                    return;
+                }
             }
 
             // Move the HERO
