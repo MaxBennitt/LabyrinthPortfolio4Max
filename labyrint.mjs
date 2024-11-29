@@ -31,6 +31,7 @@ let pallet = {
     "$": ANSI.COLOR.YELLOW,
     "B": ANSI.COLOR.GREEN,
     "O": ANSI.COLOR.BLUE,
+    "Ø": ANSI.COLOR.BLUE,
     "X": ANSI.COLOR.RED,
     "\u2668": ANSI.COLOR.YELLOW,
 }
@@ -48,14 +49,29 @@ const HERO = "H";
 const LOOT = "$";
 const WALL = "█";
 const DOOR = "O";
+const BACKDOOR = "Ø";
 const NPC = "X";
 const TELEPORT = "\u2668";
+const LEVEL_CONNECTIONS = {
+    "start": { 
+        next: "aSharpPlace", 
+        prev: null 
+    },
+    "aSharpPlace": { 
+        next: "treasureMap", 
+        prev: "start" 
+    },
+    "treasureMap": { 
+        next: null, 
+        prev: "aSharpPlace" 
+    }
+};
 
 let direction = -1;
 
 let items = [];
 
-const THINGS = [LOOT, EMPTY, DOOR, NPC, TELEPORT];
+const THINGS = [LOOT, EMPTY, NPC, TELEPORT];
 
 let eventText = "";
 
@@ -158,6 +174,28 @@ class Labyrinth {
         let tRow = playerPos.row + (1 * drow);
         let tcol = playerPos.col + (1 * dcol);
 
+        if (level[tRow][tcol] === DOOR) {
+            if (currentLevel === "start") {
+                this.loadLevel("aSharpPlace");
+                return;
+            }
+            else if (currentLevel === "aSharpPlace") {
+                this.loadLevel('treasureMap');
+                return;
+            }
+        }
+
+        if (level[tRow][tcol] === BACKDOOR) {
+            if (currentLevel === "aSharpPlace") {
+                this.loadLevel('start');
+                return;
+            }
+            else if (currentLevel === "treasureMap") {
+                this.loadLevel("aSharpPlace");
+                return;
+            }
+        }
+
         if (THINGS.includes(level[tRow][tcol])) { // Is there anything where Hero is moving to
 
             if (drow !== 0 || dcol !== 0) {
@@ -174,13 +212,6 @@ class Labyrinth {
                 let loot = Math.round(Math.random() * 7) + 3;
                 playerStats.chash += loot;
                 eventText = `Player gained ${loot}$`;
-            }
-
-            if (currentItem == DOOR) {
-                if (currentLevel === startingLevel) {
-                    this.loadLevel("aSharpPlace");
-                    return;
-                }
             }
 
             // Can't walk into the teleport from the right side.
